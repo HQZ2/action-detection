@@ -5,7 +5,6 @@ import fnmatch
 
 
 def load_proposal_file(filename):
-    filename = 'data/activitynet1.2_tag_train_normalized_proposal_list.txt'
     lines = list(open(filename))
     from itertools import groupby
     groups = groupby(lines, lambda x: x.startswith('#'))
@@ -40,7 +39,11 @@ def process_proposal_list(norm_proposal_list, out_list_name, frame_dict):
     processed_proposal_list = []
     for idx, prop in enumerate(norm_proposals):
         vid = prop[0]
-        frame_info = frame_dict[vid]
+        try:
+            frame_info = frame_dict[vid]
+        except:
+            print('{} is invalid!'.format(vid))
+            continue
         frame_cnt = frame_info[1]
         frame_path = frame_info[0]
 
@@ -64,8 +67,8 @@ def process_proposal_list(norm_proposal_list, out_list_name, frame_dict):
     open(out_list_name, 'w').writelines(processed_proposal_list)
 
 
-def parse_directory(rgb_path, flow_path, key_func=lambda x: x[2:-4],
-                    rgb_prefix='img_', flow_x_prefix='flow_x_', flow_y_prefix='flow_y_'):
+def parse_directory(rgb_path, flow_path, key_func=lambda x: x[-15:-4],
+                    rgb_prefix='image_', flow_x_prefix='flow_x_', flow_y_prefix='flow_y_'):
     """
     Parse directories holding extracted frames from standard benchmarks
     """
@@ -81,13 +84,13 @@ def parse_directory(rgb_path, flow_path, key_func=lambda x: x[2:-4],
         cnt_list = list([])
         cnt_list.append(len(fnmatch.filter(rgb_lst, rgb_pre+'*')))
         cnt_list.append(len(fnmatch.filter(flow_lst, flow_x_pre + '*')))
-        cnt_list.append(len(fnmatch.filter(flow_directory, flow_y_pre + '*')))
+        cnt_list.append(len(fnmatch.filter(flow_lst, flow_y_pre + '*')))
         return cnt_list
 
     # check RGB
     frame_dict = {}
     for i, f in enumerate(rgb_frame_folders):
-        all_cnt = count_files(f, glob.glob(os.path.join(flow_path, f)), rgb_prefix, flow_x_prefix, flow_y_prefix)
+        all_cnt = count_files(f, os.path.join(flow_path, f.split('/')[-1]), rgb_prefix, flow_x_prefix, flow_y_prefix)
         if all_cnt is None:
             continue
         k = key_func(f)
@@ -101,7 +104,6 @@ def parse_directory(rgb_path, flow_path, key_func=lambda x: x[2:-4],
             print('{} videos parsed'.format(i))
 
         frame_dict[k] = (f, all_cnt[0], x_cnt)
-
     print('frame folder analysis done')
     return frame_dict
 

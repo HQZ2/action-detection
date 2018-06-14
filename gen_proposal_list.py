@@ -1,4 +1,5 @@
 import argparse
+import pickle
 import os
 from ops.io import process_proposal_list, parse_directory
 from ops.utils import get_configs
@@ -19,7 +20,7 @@ out_list_tmpl = 'data/{}_proposal_list.txt'
 
 
 if args.dataset == 'activitynet1.2':
-    key_func = lambda x: x[2:-4]
+    key_func = lambda x: x[-15:-4]
 elif args.dataset == 'thumos14':
     key_func = lambda x: x.split('/')[-1]
 else:
@@ -27,7 +28,9 @@ else:
 
 
 # parse the folders holding the extracted frames
-frame_dict = parse_directory(args.rgb_path, args.flow_path, key_func=key_func)
+#frame_dict = parse_directory(args.rgb_path, args.flow_path, key_func=key_func)
+pkl = open('data/frame_dict.pkl','rb')
+frame_dict = pickle.load(pkl)
 
 process_proposal_list(norm_list_tmpl.format(configs['train_list']),
                       out_list_tmpl.format(configs['train_list']), frame_dict)
