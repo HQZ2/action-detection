@@ -5,6 +5,7 @@ import fnmatch
 
 
 def load_proposal_file(filename):
+    filename = 'data/activitynet1.2_tag_train_normalized_proposal_list.txt'
     lines = list(open(filename))
     from itertools import groupby
     groups = groupby(lines, lambda x: x.startswith('#'))
@@ -63,29 +64,39 @@ def process_proposal_list(norm_proposal_list, out_list_name, frame_dict):
     open(out_list_name, 'w').writelines(processed_proposal_list)
 
 
-def parse_directory(path, key_func=lambda x: x[-11:],
+def parse_directory(rgb_path, flow_path, key_func=lambda x: x[2:-4],
                     rgb_prefix='img_', flow_x_prefix='flow_x_', flow_y_prefix='flow_y_'):
     """
     Parse directories holding extracted frames from standard benchmarks
     """
-    print('parse frames under folder {}'.format(path))
-    frame_folders = glob.glob(os.path.join(path, '*'))
+    print('parse frames under folder {}'.format(rgb_path))
+    rgb_frame_folders = glob.glob(os.path.join(rgb_path, '*'))
 
-    def count_files(directory, prefix_list):
-        lst = os.listdir(directory)
-        cnt_list = [len(fnmatch.filter(lst, x+'*')) for x in prefix_list]
+    def count_files(rgb_directory, flow_directory, rgb_pre, flow_x_pre, flow_y_pre):
+        if (not os.path.exists(rgb_directory)) or (not os.path.exists(flow_directory)):
+            print('{} or {} is invalid!'.format(rgb_directory, flow_directory))
+            return None
+        rgb_lst = os.listdir(rgb_directory)
+        flow_lst = os.listdir(flow_directory)
+        cnt_list = list([])
+        cnt_list.append(len(fnmatch.filter(rgb_lst, rgb_pre+'*')))
+        cnt_list.append(len(fnmatch.filter(flow_lst, flow_x_pre + '*')))
+        cnt_list.append(len(fnmatch.filter(flow_directory, flow_y_pre + '*')))
         return cnt_list
 
     # check RGB
     frame_dict = {}
-    for i, f in enumerate(frame_folders):
-        all_cnt = count_files(f, (rgb_prefix, flow_x_prefix, flow_y_prefix))
+    for i, f in enumerate(rgb_frame_folders):
+        all_cnt = count_files(f, glob.glob(os.path.join(flow_path, f)), rgb_prefix, flow_x_prefix, flow_y_prefix)
+        if all_cnt is None:
+            continue
         k = key_func(f)
 
         x_cnt = all_cnt[1]
         y_cnt = all_cnt[2]
         if x_cnt != y_cnt:
-            raise ValueError('x and y direction have different number of flow images. video: '+f)
+            print('x and y direction have different number of flow images. video: '+f)
+            continue
         if i % 200 == 0:
             print('{} videos parsed'.format(i))
 
