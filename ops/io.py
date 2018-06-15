@@ -107,16 +107,17 @@ def parse_directory(rgb_path, flow_path, key_func=lambda x: x[-15:-4],
     print('frame folder analysis done')
     return frame_dict
 
-def dump_window_list(video_info, named_proposals, frame_path, name_pattern, allow_empty=False, score=None):
+def dump_window_list(video_info, named_proposals, frame_path, name_pattern, allow_empty=True, score=None):
 
     # first count frame numbers
     try:
-        video_name = video_info.path.split('/')[-1].split('.')[0]
+        video_name = video_info.path.split('/')[-1]
         files = glob.glob(os.path.join(frame_path, video_name, name_pattern))
         frame_cnt = len(files)
     except:
         if allow_empty:
-            frame_cnt = score.shape[0] * 6
+            #frame_cnt = score.shape[0] * 6
+            frame_cnt = 0
             video_name = video_info.id
         else:
             raise
