@@ -38,7 +38,7 @@ parser.add_argument('--reg_loss_weight', '--rw', default=0.1, type=float,
                     metavar='LW', help='the weight for the location regression loss')
 
 # ========================= Monitor Configs ==========================
-parser.add_argument('--print-freq', '-p', default=20, type=int,
+parser.add_argument('--print-freq', '-p', default=1, type=int,
                     metavar='N', help='print frequency (default: 10)')
 parser.add_argument('--eval-freq', '-ef', default=1, type=int,
                     metavar='N', help='evaluation frequency (default: 5)')

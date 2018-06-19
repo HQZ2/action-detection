@@ -34,7 +34,7 @@ thumos14:
 activitynet1.2:
   train_list: activitynet1.2_sw_train
   test_list: activitynet1.2_sw_val
-  num_class: 100
+  num_class: 2
   sampling:
     fg_iou_thresh: 0.7
     bg_iou_thresh: 0.01

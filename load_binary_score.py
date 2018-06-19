@@ -83,7 +83,7 @@ class BinaryDataSet(data.Dataset):
                  prop_file = None,
                  body_seg=5, video_centric=True,
                  new_length=1, modality='RGB',
-                 image_tmpl='img_{:05d}.jpg', transform=None,
+                 image_tmpl='image_{:05d}.jpg', transform=None,
                  random_shift=True, test_mode=False,
                  prop_per_video=12, fg_ratio=3, bg_ratio=9,
                  fg_iou_thresh=0.7,
@@ -119,9 +119,8 @@ class BinaryDataSet(data.Dataset):
         self.gt_as_fg = gt_as_fg
         denum = fg_ratio + bg_ratio
 
-        self.fg_per_video = int(prop_per_video * (fg_ratio / denum))
-        self.bg_per_video = int(prop_per_video * (bg_ratio / denum))
-
+        self.fg_per_video = int(prop_per_video * fg_ratio / denum)
+        self.bg_per_video = int(prop_per_video * bg_ratio / denum)
         self._parse_prop_file()
 
     def _parse_prop_file(self):
@@ -215,7 +214,6 @@ class BinaryDataSet(data.Dataset):
         for idx in frame_selected:
             for x in range(self.new_length):
                 frames.extend(self._load_image(prop[0][0], min(frame_cnt, idx+x)))
-
         return frames, prop[1]
         # sample segment indices
 
@@ -245,7 +243,6 @@ class BinaryDataSet(data.Dataset):
 
         video = self.video_list[index]
         props = self._video_centric_sampling(video)
-        
         out_frames = []
         out_prop_len = []
         out_prop_type = []
@@ -256,7 +253,6 @@ class BinaryDataSet(data.Dataset):
             processed_frames = self.transform(prop_frames)
             out_frames.append(processed_frames)
             out_prop_type.append(prop_type)
-
         out_prop_type = torch.from_numpy(np.array(out_prop_type))
         out_frames = torch.cat(out_frames)
         return out_frames, out_prop_type

@@ -58,7 +58,6 @@ for th in IOU_thresh:
     recall_list.append([args.overlap, th, np.mean(list(map(len, proposal_list))), pv, pi])
 print("average per video recall: {:.2f}, average per instance recall: {:.2f}".format(
     np.mean([x[3] for x in recall_list]), np.mean([x[4] for x in recall_list])))
-
 dumped_list = [dump_window_list(v, prs, args.frame_path, name_pattern) for v, prs in zip(videos, named_proposal_list) if v.id not in avoid_list]
 
 with open(args.output_file, 'w') as of:

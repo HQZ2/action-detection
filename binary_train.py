@@ -81,14 +81,14 @@ def main():
                       new_length=data_length,
                       modality=args.modality, exclude_empty=True,
                       body_seg=args.num_body_segments,
-                      image_tmpl="img_{:05d}.jpg" if args.modality in ['RGB', 'RGBDiff'] else args.flow_prefix+"{}_{:05d}.jpg",
+                      image_tmpl="image_{:05d}.jpg" if args.modality in ['RGB', 'RGBDiff'] else args.flow_prefix+"{}_{:05d}.jpg",
                       transform=torchvision.transforms.Compose([
                           train_augmentation,
                           Stack(roll=(args.arch in ['BNInception', 'InceptionV3'])),
                           ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
                           normalize,
                       ])),
-         batch_size=4, shuffle=True,
+         batch_size=args.batch_size, shuffle=True,
          num_workers=args.workers, pin_memory=pin_memory,
          drop_last = True) 
 
@@ -97,7 +97,7 @@ def main():
          BinaryDataSet("", val_prop_file, new_length=data_length,
                        modality=args.modality, exclude_empty=True,
                        body_seg = args.num_body_segments,
-                       image_tmpl="img_{:05}.jpg" if args.modality in ["RGB", "RGBDiff"] else args.flow_prefix+"{}_{:05d}.jpg",
+                       image_tmpl="image_{:05}.jpg" if args.modality in ["RGB", "RGBDiff"] else args.flow_prefix+"{}_{:05d}.jpg",
                        random_shift=False, fg_ratio = 6, bg_ratio = 6,
                        transform=torchvision.transforms.Compose([
                            GroupScale(int(scale_size)),
@@ -106,7 +106,7 @@ def main():
                            ToTorchFormatTensor(div=(args.arch not in ['BNInception', 'InceptionV3'])),
                            normalize,
                        ])),
-         batch_size=4, shuffle=False,
+         batch_size=args.batch_size, shuffle=False,
          num_workers=args.workers, pin_memory=pin_memory)
 
 
@@ -163,11 +163,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         input_var = torch.autograd.Variable(out_frames)
         prop_type_var = torch.autograd.Variable(out_prop_type)
-
         # compute output
-
         binary_score, prop_type_target = model(input_var, prop_type_var)
-
         loss = criterion(binary_score, prop_type_target)
 
         losses.update(loss.data[0], out_frames.size(0))
